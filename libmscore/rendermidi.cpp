@@ -927,7 +927,7 @@ void renderChordArticulation(Chord *chord, QList<NoteEventList> & ell, int & gat
             
             switch (type) {
                 case ArticulationType::Turn: {
-                    vector<int> body = {0,1,0,-1,0};
+                    vector<int> body = {1,0,-1,0};
                     renderNoteArticulation(events, chord, pitch, _32nd,
                                        emptypattern,
                                        body, false, true, // sustain last note of body, but don't repeat
@@ -935,7 +935,7 @@ void renderChordArticulation(Chord *chord, QList<NoteEventList> & ell, int & gat
                 }
                     break;
                 case ArticulationType::Reverseturn: {
-                    vector<int> body = {0,-1,0,1,0};
+                    vector<int> body = {-1,0,1,0};
                     renderNoteArticulation(events, chord, pitch, _32nd,
                                        emptypattern,
                                        body, false, true, // sustain last note of body, but don't repeat
@@ -961,9 +961,6 @@ void renderChordArticulation(Chord *chord, QList<NoteEventList> & ell, int & gat
                     //    }
                     //    break;
                 case ArticulationType::Mordent: {
-                    //
-                    // create default playback for Mordent
-                    //
                     vector<int> body = {0,-1,0};
                     renderNoteArticulation(events, chord, pitch, _16th,
                                        emptypattern,
@@ -972,9 +969,6 @@ void renderChordArticulation(Chord *chord, QList<NoteEventList> & ell, int & gat
                 }
                     break;
                 case ArticulationType::Prall: { // inverted mordent
-                    //
-                    // create default playback events for PrallSym
-                    //
                     vector<int> body = {0,1,0};
                     renderNoteArticulation(events, chord, pitch, _16th,
                                        emptypattern,
@@ -982,7 +976,37 @@ void renderChordArticulation(Chord *chord, QList<NoteEventList> & ell, int & gat
                                        emptypattern);
                 }
                     break;
+                case ArticulationType::PrallMordent: {
+                    vector<int> prefix = {1,0};
+                    vector<int> body   = {1,0};
+                    vector<int> suffix = {-1,0};
+                    renderNoteArticulation(events, chord, pitch, _32nd,
+                                           prefix,
+                                           body, true, true,
+                                           suffix);
+                }
+                    break;
+                case ArticulationType::DownPrall: {
+                    vector<int> body = {1};
+                    vector<int> suffix = {0,1,0,1,0};
+                    renderNoteArticulation(events, chord, pitch, _32nd,
+                                           emptypattern,
+                                           body, false, true,
+                                           suffix);
+                }
+                    break;
+                case ArticulationType::Schleifer: {
+                    vector<int> prefix = {-1,0};
+                    vector<int> body   = {1,0};
+                    vector<int> suffix = {-1,0};
+                    renderNoteArticulation(events, chord, pitch, _32nd,
+                                           prefix,
+                                           body, true, true,
+                                           suffix);
+                }
+                    break;
                 default:
+                    qDebug("MISSING %hhd %s", type, qPrintable(a->subtypeName()));
                     instr->updateGateTime(&gateTime, channel, a->subtypeName());
                     break;
             }
