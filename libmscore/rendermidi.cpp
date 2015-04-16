@@ -1019,12 +1019,11 @@ void renderChordArticulation(Chord *chord, QList<NoteEventList> & ell, int & gat
                 }
                     break;
                 case ArticulationType::Schleifer: {
-                    vector<int> prefix = {-1,0};
-                    vector<int> body   = {1,0};
-                    vector<int> suffix = {-1,0};
+                    vector<int> body = {-3,-2,-1,0};
+                    vector<int> suffix = {1,2,1,0};
                     renderNoteArticulation(events, chord, pitch, _32nd,
-                                           prefix,
-                                           body, true, true,
+                                           emptypattern,
+                                           body, false, true,
                                            suffix);
                 }
                     break;
