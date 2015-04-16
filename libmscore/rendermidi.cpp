@@ -919,7 +919,9 @@ void renderChordArticulation(Chord *chord, QList<NoteEventList> & ell, int & gat
     int _32nd = _16th / 2;
     vector<int> emptypattern = {};
     
-    foreach (Articulation* a, chord->articulations()) {
+    for (Articulation* a : chord->articulations()) {
+        if ( MScore::OrnamentStyle::NO_ORNAMENTATION == a->ornamentStyle())
+            continue;
         ArticulationType type = a->articulationType();
         for (int k = 0; k < notes; ++k) {
             NoteEventList* events = &ell[k];
@@ -942,13 +944,34 @@ void renderChordArticulation(Chord *chord, QList<NoteEventList> & ell, int & gat
                                        emptypattern);
                 }
                     break;
-                case ArticulationType::Trill:{
-                    vector<int> prefix = {1,0};
-                    vector<int> body = {1,0};
-                    renderNoteArticulation(events, chord, pitch, _32nd,
-                                       prefix,
-                                       body, true, true, // repeat as many times as possible, then sustain the final note
-                                       emptypattern);
+                case ArticulationType::Trill: {
+                    if ( a->ornamentStyle() == MScore::OrnamentStyle::BAROQUE) {
+                        vector<int> prefix = {1,0};
+                        vector<int> body = {1,0};
+                        renderNoteArticulation(events, chord, pitch, _32nd,
+                                               prefix,
+                                               body, true, true, // repeat as many times as possible, then sustain the final note
+                                               emptypattern);
+                    }
+                    else {
+                        vector<int> prefix = {0,1};
+                        vector<int> body = {0,1};
+                        renderNoteArticulation(events, chord, pitch, _32nd,
+                                               prefix,
+                                               body, true, true, // repeat as many times as possible, then sustain the final note
+                                               emptypattern);
+                    }
+                }
+                    break;
+                case ArticulationType::Plusstop: {
+                    if ( a->ornamentStyle() == MScore::OrnamentStyle::BAROQUE) {
+                        vector<int> prefix = { 0, -1};
+                        vector<int> body = prefix;
+                        renderNoteArticulation(events, chord, pitch, _32nd,
+                                               prefix,
+                                               body, true, true,
+                                               emptypattern);
+                    }
                 }
                     break;
                     //case ArticulationType::LinePrall: {

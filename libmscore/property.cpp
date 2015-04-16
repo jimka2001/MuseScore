@@ -169,6 +169,7 @@ static const PropertyData propertyList[] = {
       { P_ID::LASSO_SIZE,          false, 0,               P_TYPE::SIZE_MM  },
 
       { P_ID::TIME_STRETCH,        false, 0,               P_TYPE::REAL     },
+      { P_ID::ORNAMENT_STYLE,      false, 0,               P_TYPE::ORNAMENT_STYLE},
       { P_ID::TIMESIG,             false, 0,               P_TYPE::FRACTION },
       { P_ID::TIMESIG_GLOBAL,      false, 0,               P_TYPE::FRACTION },
       { P_ID::TIMESIG_STRETCH,     false, 0,               P_TYPE::FRACTION },
@@ -283,6 +284,17 @@ QVariant getProperty(P_ID id, XmlReader& e)
                   return QVariant(e.readSize());
             case P_TYPE::STRING:
                   return QVariant(e.readElementText());
+            case P_TYPE::ORNAMENT_STYLE:
+                  {
+                      QString value(e.readElementText());
+                      if ( value == "baroque")
+                          return QVariant(int(MScore::OrnamentStyle::BAROQUE));
+                      if ( value == "no ornamentation")
+                          return QVariant(int(MScore::OrnamentStyle::NO_ORNAMENTATION));
+                      
+                      return QVariant(int(MScore::OrnamentStyle::DEFAULT));
+                  }
+                  break; // break is really not necessary because of the default return
             case P_TYPE::DIRECTION:
                   {
                   QString value(e.readElementText());

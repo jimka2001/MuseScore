@@ -56,6 +56,7 @@ struct ArticulationInfo {
       QString name;           // as stored in score files
       QString description;    // user-visible, translatable, name
       qreal timeStretch;      // for fermata
+      MScore::OrnamentStyle ornamentStyle; // or ornaments such as trill
       ArticulationShowIn flags;
       };
 
@@ -76,7 +77,8 @@ class Articulation : public Element {
 
       bool _up;
       qreal _timeStretch;      // for fermata
-
+      MScore::OrnamentStyle _ornamentStyle; // for use in ornaments such as trill
+    
       virtual void draw(QPainter*) const;
 
    public:
@@ -134,6 +136,9 @@ class Articulation : public Element {
 
       qreal timeStretch() const             { return _timeStretch; }
       void setTimeStretch(qreal val)        { _timeStretch = val;  }
+
+      MScore::OrnamentStyle ornamentStyle() const { return _ornamentStyle; }
+      void setOrnamentStyle(MScore::OrnamentStyle val) { _ornamentStyle = val; }
 
       QString channelName() const           { return _channelName; }
       void setChannelName(const QString& s) { _channelName = s;    }
