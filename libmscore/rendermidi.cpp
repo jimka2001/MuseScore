@@ -15,6 +15,8 @@
  render score into event list
 */
 
+#include <set>
+
 #include "score.h"
 #include "volta.h"
 #include "note.h"
@@ -910,7 +912,18 @@ void renderNoteArticulation(NoteEventList* events,
     }
 }
     
+
 void renderChordArticulation(Chord *chord, QList<NoteEventList> & ell, int & gateTime) {
+    struct OrnamentExcursion {
+        ArticulationType at;
+        set<MScore::OrnamentStyle> ostyles;
+        int duration;
+        vector<int> prefix;
+        vector<int> body;
+        bool repeatp;
+        bool sustainp;
+        vector<int> suffix;
+    };
     Segment* seg = chord->segment();
     Instrument* instr = chord->part()->instrument(seg->tick());
     int notes = chord->notes().size();
@@ -918,6 +931,23 @@ void renderChordArticulation(Chord *chord, QList<NoteEventList> & ell, int & gat
     int _16th = MScore::division / 4;
     int _32nd = _16th / 2;
     vector<int> emptypattern = {};
+    set<MScore::OrnamentStyle> baroque = {MScore::OrnamentStyle::BAROQUE};
+    set<MScore::OrnamentStyle> any     = {};
+    vector<OrnamentExcursion>
+       excursions = {
+           //  articulation type           set of  duration       body         repeatp      suffix
+           //                              styles          prefix                    sustainp
+           {ArticulationType::Turn,        any,     _32nd, {},    {1,0,-1,0},   false, true, {}},
+           {ArticulationType::Reverseturn, any,     _32nd, {},    {-1,0,1,0},   false, true, {}},
+           {ArticulationType::Trill,       baroque, _32nd, {1,0}, {1,0},        true,  true, {}},
+           {ArticulationType::Trill,       any,     _32nd, {0,1}, {0,1},        true,  true, {}},
+           {ArticulationType::Plusstop,    baroque, _32nd, {0,-1},{ 0, -1},     true,  true, {}},
+           {ArticulationType::Mordent,     any,     _16th, {},    {0,-1,0},     false, true, {}},
+           {ArticulationType::Prall,       any,     _16th, {},    {0,1,0},      false, true, {}},
+           {ArticulationType::PrallMordent,any,     _32nd, {1,0}, {1,0},        true,  true, {-1,0}},
+           {ArticulationType::DownPrall,   any,     _32nd, {},    {1},          false, true, {0,1,0,1,0}},
+           {ArticulationType::Schleifer,   any,     _32nd, {},    {-3,-2,-1,0}, false, true, {1,2,1,0}}
+       };
     
     for (Articulation* a : chord->articulations()) {
         if ( MScore::OrnamentStyle::NO_ORNAMENTATION == a->ornamentStyle())
@@ -926,111 +956,20 @@ void renderChordArticulation(Chord *chord, QList<NoteEventList> & ell, int & gat
         for (int k = 0; k < notes; ++k) {
             NoteEventList* events = &ell[k];
             int pitch   = chord->notes()[k]->epitch();
-            
-            switch (type) {
-                case ArticulationType::Turn: {
-                    vector<int> body = {1,0,-1,0};
-                    renderNoteArticulation(events, chord, pitch, _32nd,
-                                       emptypattern,
-                                       body, false, true, // sustain last note of body, but don't repeat
-                                       emptypattern);
+            bool found = false;
+            for ( OrnamentExcursion oe : excursions) {
+                if ( oe.at == a->articulationType()
+                       && ( oe.ostyles.size() == 0
+                            || oe.ostyles.find(a->ornamentStyle()) != oe.ostyles.end())) {
+                    found = true;
+                    renderNoteArticulation(events, chord, pitch, oe.duration,
+                                           oe.prefix, oe.body, oe.repeatp, oe.sustainp, oe.suffix);
+                    break;
                 }
-                    break;
-                case ArticulationType::Reverseturn: {
-                    vector<int> body = {-1,0,1,0};
-                    renderNoteArticulation(events, chord, pitch, _32nd,
-                                       emptypattern,
-                                       body, false, true, // sustain last note of body, but don't repeat
-                                       emptypattern);
-                }
-                    break;
-                case ArticulationType::Trill: {
-                    if ( a->ornamentStyle() == MScore::OrnamentStyle::BAROQUE) {
-                        vector<int> prefix = {1,0};
-                        vector<int> body = {1,0};
-                        renderNoteArticulation(events, chord, pitch, _32nd,
-                                               prefix,
-                                               body, true, true, // repeat as many times as possible, then sustain the final note
-                                               emptypattern);
-                    }
-                    else {
-                        vector<int> prefix = {0,1};
-                        vector<int> body = {0,1};
-                        renderNoteArticulation(events, chord, pitch, _32nd,
-                                               prefix,
-                                               body, true, true, // repeat as many times as possible, then sustain the final note
-                                               emptypattern);
-                    }
-                }
-                    break;
-                case ArticulationType::Plusstop: {
-                    if ( a->ornamentStyle() == MScore::OrnamentStyle::BAROQUE) {
-                        vector<int> prefix = { 0, -1};
-                        vector<int> body = prefix;
-                        renderNoteArticulation(events, chord, pitch, _32nd,
-                                               prefix,
-                                               body, true, true,
-                                               emptypattern);
-                    }
-                }
-                    break;
-                    //case ArticulationType::LinePrall: {
-                    //    vector<int> body = {1};
-                    //    vector<int> suffix = {0,1,0,1};
-                    //    renderNoteArticulation(events, chord, pitch , _16th,
-                    //                       emptypattern,
-                    //                       body, false, true, // no repeat, but sustain
-                    //                       suffix);
-                    //    }
-                    //    break;
-                case ArticulationType::Mordent: {
-                    vector<int> body = {0,-1,0};
-                    renderNoteArticulation(events, chord, pitch, _16th,
-                                       emptypattern,
-                                       body, false, true,
-                                       emptypattern);
-                }
-                    break;
-                case ArticulationType::Prall: { // inverted mordent
-                    vector<int> body = {0,1,0};
-                    renderNoteArticulation(events, chord, pitch, _16th,
-                                       emptypattern,
-                                       body, false, true,
-                                       emptypattern);
-                }
-                    break;
-                case ArticulationType::PrallMordent: {
-                    vector<int> prefix = {1,0};
-                    vector<int> body   = {1,0};
-                    vector<int> suffix = {-1,0};
-                    renderNoteArticulation(events, chord, pitch, _32nd,
-                                           prefix,
-                                           body, true, true,
-                                           suffix);
-                }
-                    break;
-                case ArticulationType::DownPrall: {
-                    vector<int> body = {1};
-                    vector<int> suffix = {0,1,0,1,0};
-                    renderNoteArticulation(events, chord, pitch, _32nd,
-                                           emptypattern,
-                                           body, false, true,
-                                           suffix);
-                }
-                    break;
-                case ArticulationType::Schleifer: {
-                    vector<int> body = {-3,-2,-1,0};
-                    vector<int> suffix = {1,2,1,0};
-                    renderNoteArticulation(events, chord, pitch, _32nd,
-                                           emptypattern,
-                                           body, false, true,
-                                           suffix);
-                }
-                    break;
-                default:
-                    qDebug("MISSING %hhd %s", type, qPrintable(a->subtypeName()));
-                    instr->updateGateTime(&gateTime, channel, a->subtypeName());
-                    break;
+            }
+            if ( !found ) {
+               qDebug("MISSING %hhd %s", type, qPrintable(a->subtypeName()));
+               instr->updateGateTime(&gateTime, channel, a->subtypeName());
             }
         }
     }
