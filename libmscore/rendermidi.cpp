@@ -915,7 +915,7 @@ void renderNoteArticulation(NoteEventList* events,
 
 void renderChordArticulation(Chord *chord, QList<NoteEventList> & ell, int & gateTime) {
     struct OrnamentExcursion {
-        ArticulationType at;
+        ArticulationType atype;
         set<MScore::OrnamentStyle> ostyles;
         int duration;
         vector<int> prefix;
@@ -926,13 +926,13 @@ void renderChordArticulation(Chord *chord, QList<NoteEventList> & ell, int & gat
     };
     Segment* seg = chord->segment();
     Instrument* instr = chord->part()->instrument(seg->tick());
-    int notes = chord->notes().size();
     int channel  = 0;  // note->subchannel();
     int _16th = MScore::division / 4;
     int _32nd = _16th / 2;
     vector<int> emptypattern = {};
-    set<MScore::OrnamentStyle> baroque = {MScore::OrnamentStyle::BAROQUE};
-    set<MScore::OrnamentStyle> any     = {};
+    set<MScore::OrnamentStyle> baroque  = {MScore::OrnamentStyle::BAROQUE};
+    set<MScore::OrnamentStyle> defstyle = {MScore::OrnamentStyle::DEFAULT};
+    set<MScore::OrnamentStyle> any      = {}; // empty set has the special meaning of any-style, rather than no-styles.
     vector<OrnamentExcursion>
        excursions = {
            //  articulation type           set of  duration       body         repeatp      suffix
@@ -940,7 +940,7 @@ void renderChordArticulation(Chord *chord, QList<NoteEventList> & ell, int & gat
            {ArticulationType::Turn,        any,     _32nd, {},    {1,0,-1,0},   false, true, {}},
            {ArticulationType::Reverseturn, any,     _32nd, {},    {-1,0,1,0},   false, true, {}},
            {ArticulationType::Trill,       baroque, _32nd, {1,0}, {1,0},        true,  true, {}},
-           {ArticulationType::Trill,       any,     _32nd, {0,1}, {0,1},        true,  true, {}},
+           {ArticulationType::Trill,       defstyle,_32nd, {0,1}, {0,1},        true,  true, {}},
            {ArticulationType::Plusstop,    baroque, _32nd, {0,-1},{ 0, -1},     true,  true, {}},
            {ArticulationType::Mordent,     any,     _16th, {},    {0,-1,0},     false, true, {}},
            {ArticulationType::Prall,       any,     _16th, {},    {0,1,0},      false, true, {}},
@@ -952,15 +952,14 @@ void renderChordArticulation(Chord *chord, QList<NoteEventList> & ell, int & gat
     for (Articulation* a : chord->articulations()) {
         if ( MScore::OrnamentStyle::NO_ORNAMENTATION == a->ornamentStyle())
             continue;
-        ArticulationType type = a->articulationType();
-        for (int k = 0; k < notes; ++k) {
+        for (int k = 0; k < chord->notes().size(); ++k) {
             NoteEventList* events = &ell[k];
             int pitch   = chord->notes()[k]->epitch();
             bool found = false;
             for ( OrnamentExcursion oe : excursions) {
-                if ( oe.at == a->articulationType()
+                if ( oe.atype == a->articulationType()
                        && ( oe.ostyles.size() == 0
-                            || oe.ostyles.find(a->ornamentStyle()) != oe.ostyles.end())) {
+                            || oe.ostyles.end() != oe.ostyles.find(a->ornamentStyle()))) {
                     found = true;
                     renderNoteArticulation(events, chord, pitch, oe.duration,
                                            oe.prefix, oe.body, oe.repeatp, oe.sustainp, oe.suffix);
@@ -968,7 +967,7 @@ void renderChordArticulation(Chord *chord, QList<NoteEventList> & ell, int & gat
                 }
             }
             if ( !found ) {
-               qDebug("MISSING %hhd %s", type, qPrintable(a->subtypeName()));
+               qDebug("MISSING %hhd %s", a->articulationType(), qPrintable(a->subtypeName()));
                instr->updateGateTime(&gateTime, channel, a->subtypeName());
             }
         }
