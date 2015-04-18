@@ -16,6 +16,7 @@
 */
 
 #include <set>
+#include <deque>
 
 #include "score.h"
 #include "volta.h"
@@ -835,11 +836,11 @@ void renderNoteArticulation(NoteEventList* events,
                         Chord *chord,
                         int pitch,
                         int tickspernote, // number of ticks, either _16h or _32nd, i.e., MScore::division/4 or MScore::division/8
-                        vector<int> & prefix,
-                        vector<int> & body,
+                        const vector<int> & prefix,
+                        const vector<int> & body,
                         bool repeatp, // repeatp=true means repeat the body as many times as possible to fill the time slice.
                         bool sustainp, // stretchp=true means the last note of the body is sustained to fill remaining time slice
-                        vector<int> & suffix
+                        const vector<int> & suffix
                         )
 {
     events->clear();
@@ -934,6 +935,7 @@ void renderChordArticulation(Chord *chord, QList<NoteEventList> & ell, int & gat
         bool sustainp;
         vector<int> suffix;
     };
+
     Segment* seg = chord->segment();
     Instrument* instr = chord->part()->instrument(seg->tick());
     int channel  = 0;  // note->subchannel();
@@ -943,7 +945,7 @@ void renderChordArticulation(Chord *chord, QList<NoteEventList> & ell, int & gat
     set<MScore::OrnamentStyle> baroque  = {MScore::OrnamentStyle::BAROQUE};
     set<MScore::OrnamentStyle> defstyle = {MScore::OrnamentStyle::DEFAULT};
     set<MScore::OrnamentStyle> any      = {}; // empty set has the special meaning of any-style, rather than no-styles.
-    vector<OrnamentExcursion>
+    deque<OrnamentExcursion>
        excursions = {
            //  articulation type           set of  duration       body         repeatp      suffix
            //                              styles          prefix                    sustainp
@@ -973,20 +975,17 @@ void renderChordArticulation(Chord *chord, QList<NoteEventList> & ell, int & gat
         for (int k = 0; k < chord->notes().size(); ++k) {
             NoteEventList* events = &ell[k];
             int pitch   = chord->notes()[k]->epitch();
-            bool found = false;
-            for ( OrnamentExcursion oe : excursions) {
-                if ( oe.atype == a->articulationType()
-                       && ( oe.ostyles.size() == 0
-                            || oe.ostyles.end() != oe.ostyles.find(a->ornamentStyle()))) {
-                    found = true;
-                    renderNoteArticulation(events, chord, pitch, oe.duration,
-                                           oe.prefix, oe.body, oe.repeatp, oe.sustainp, oe.suffix);
-                    break;
-                }
-            }
-            if ( !found ) {
-               qDebug("MISSING %hhd %s", a->articulationType(), qPrintable(a->subtypeName()));
-               instr->updateGateTime(&gateTime, channel, a->subtypeName());
+            auto oe = find_if(excursions.cbegin(), excursions.cend(),
+                                 [a](OrnamentExcursion oe) {return  ( oe.atype == a->articulationType()
+                                                                    && ( 0 == oe.ostyles.size()
+                                                                        || oe.ostyles.end() != oe.ostyles.find(a->ornamentStyle())));
+                                 });
+            if ( oe != excursions.cend()) {
+                renderNoteArticulation(events, chord, pitch, oe->duration,
+                                       oe->prefix, oe->body, oe->repeatp, oe->sustainp, oe->suffix);
+            } else {
+                qDebug("MISSING %hhd %s", a->articulationType(), qPrintable(a->subtypeName()));
+                instr->updateGateTime(&gateTime, channel, a->subtypeName());
             }
         }
     }
