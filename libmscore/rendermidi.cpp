@@ -949,24 +949,24 @@ void renderChordArticulation(Chord *chord, QList<NoteEventList> & ell, int & gat
        excursions = {
            //  articulation type           set of  duration       body         repeatp      suffix
            //                              styles          prefix                    sustainp
-           {ArticulationType::Turn,        any,     _32nd, {},    {1,0,-1,0},   false, true, {}},
-           {ArticulationType::Reverseturn, any,     _32nd, {},    {-1,0,1,0},   false, true, {}},
-           {ArticulationType::Trill,       baroque, _32nd, {1,0}, {1,0},        true,  true, {}},
-           {ArticulationType::Trill,       defstyle,_32nd, {0,1}, {0,1},        true,  true, {}},
-           {ArticulationType::Plusstop,    baroque, _32nd, {0,-1},{0, -1},      true,  true, {}},
-           {ArticulationType::Mordent,     any,     _32nd, {},    {0,-1,0},     false, true, {}},
-           {ArticulationType::Prall,       any,     _32nd, {},    {0,1,0},      false, true, {}}, // inverted mordent
-           {ArticulationType::PrallPrall,  any,     _32nd, {1,0}, {1,0},        false, true, {}},
-           {ArticulationType::PrallMordent,any,     _32nd, {},    {1,0,-1,0},   false, true, {}},
-           {ArticulationType::UpPrall,     any,     _32nd, {-1,0},{1,0,1,0},    false, true, {}},
-           {ArticulationType::UpMordent,   any,     _32nd, {-1,0},{1,0,-1,0},   false, true, {}},
-           {ArticulationType::DownPrall,   any,     _32nd, {1,0,-1,0},
-                                                                  {1,0,1,0},    false, true, {}},
-           {ArticulationType::DownMordent, any,     _32nd, {1,0,-1,0},
-                                                                  {1,0,-1,0},   false, true, {}},
-           {ArticulationType::PrallUp,     any,     _32nd, {1,0}, {1,0},        false, true, {1}},
-           {ArticulationType::PrallDown,   any,     _32nd, {1,0}, {1,0},        false, true, {-1}},
-           {ArticulationType::Schleifer,   any,     _32nd, {},    {-2,-1,0},    false, true, {1,0,1,0}}
+            {ArticulationType::Turn,        any,     _32nd, {},    {1,0,-1,0},   false, true, {}}
+           ,{ArticulationType::Reverseturn, any,     _32nd, {},    {-1,0,1,0},   false, true, {}}
+           ,{ArticulationType::Trill,       baroque, _32nd, {1,0}, {1,0},        true,  true, {}}
+           ,{ArticulationType::Trill,       defstyle,_32nd, {0,1}, {0,1},        true,  true, {}}
+           ,{ArticulationType::Plusstop,    baroque, _32nd, {0,-1},{0, -1},      true,  true, {}}
+           ,{ArticulationType::Mordent,     any,     _32nd, {},    {0,-1,0},     false, true, {}}
+           ,{ArticulationType::Prall,       any,     _32nd, {},    {0,1,0},      false, true, {}} // inverted mordent
+           ,{ArticulationType::PrallPrall,  any,     _32nd, {1,0}, {1,0},        false, true, {}}
+           ,{ArticulationType::PrallMordent,any,     _32nd, {},    {1,0,-1,0},   false, true, {}}
+           ,{ArticulationType::UpPrall,     any,     _32nd, {-1,0},{1,0,1,0},    false, true, {}}
+           ,{ArticulationType::UpMordent,   any,     _32nd, {-1,0},{1,0,-1,0},   false, true, {}}
+           ,{ArticulationType::DownPrall,   any,     _32nd, {1,0,-1,0},
+                                                                   {1,0,1,0},    false, true, {}}
+           ,{ArticulationType::DownMordent, any,     _32nd, {1,0,-1,0},
+                                                                   {1,0,-1,0},   false, true, {}}
+           ,{ArticulationType::PrallUp,     any,     _32nd, {1,0}, {1,0},        false, true, {1}}
+           ,{ArticulationType::PrallDown,   any,     _32nd, {1,0}, {1,0},        false, true, {-1}}
+           ,{ArticulationType::Schleifer,   any,     _32nd, {},    {-2,-1,0},    false, true, {1,0,1,0}}
        };
     
     for (Articulation* a : chord->articulations()) {
