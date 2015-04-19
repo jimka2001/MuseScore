@@ -864,7 +864,7 @@ void renderNoteArticulation(NoteEventList* events,
     // This corresponds to 16 notes per second. 16 = 32 / (120 / 60).
     // Thus minduration = ticksPerSecond / 16.
     int mintickspernote = static_cast<int>(ticksPerSecond / 16); // minimum number of ticks for the shortest note in a trill or other articulation
-    qDebug("P=%d B=%d S=%d tickspernote(given)=%d minduration=%d maxticks=%d", P, B, S, tickspernote, mintickspernote, maxticks);
+    //qDebug("P=%d B=%d S=%d tickspernote(given)=%d minduration=%d maxticks=%d", P, B, S, tickspernote, mintickspernote, maxticks);
 
     // is the requested duration smaller than the minimum, if so, increase it to the minimum.
     tickspernote = max(tickspernote, mintickspernote);
@@ -878,7 +878,7 @@ void renderNoteArticulation(NoteEventList* events,
         tickspernote = maxticks / (P + B + S) ; // integer division ignoring remainder
     }
     int millespernote = space * tickspernote / maxticks ; // rescale duration into per mille
-    qDebug("finally tickspernote = %d millespernote=%d", tickspernote, millespernote);
+    //qDebug("finally tickspernote = %d millespernote=%d", tickspernote, millespernote);
 
     // calculate the number of times to repeat the body, and sustain the last note of the body
     // 1000 = P + numrepeat*B+sustain + S
@@ -890,35 +890,35 @@ void renderNoteArticulation(NoteEventList* events,
     }
 
     // render the prefix
-    qDebug("prefix");
+    //qDebug("prefix");
     for (int j=0; j<P; j++, ontime += millespernote) {
-        qDebug("   pitch=%d ontime=%d millespernote=%d", pitch, ontime, millespernote);
+        //qDebug("   pitch=%d ontime=%d millespernote=%d", pitch, ontime, millespernote);
         events->append( NoteEvent( articulationExcursion(key, pitch, prefix[j]), ontime, millespernote));
     }
-    qDebug("body");
+    //qDebug("body");
     if ( B > 0 ) {
        // render the body, but not the final repetion
        for (int r=0; r < numrepeat-1; r++){
            for (int j=0; j<B; j++, ontime += millespernote) {
-               qDebug("   (1) pitch=%d ontime=%d millspernote=%d", pitch, ontime, millespernote);
+               //qDebug("   (1) pitch=%d ontime=%d millspernote=%d", pitch, ontime, millespernote);
                events->append( NoteEvent( articulationExcursion(key, pitch, body[j]), ontime, millespernote));
            }
        }
        // render the final repetion of body, but not the final note of the repition
        for (int j=0; j<B-1; j++, ontime += millespernote) {
-           qDebug("   (2) pitch=%d ontime=%d millspernote=%d", pitch, ontime, millespernote);
+           //qDebug("   (2) pitch=%d ontime=%d millspernote=%d", pitch, ontime, millespernote);
            events->append( NoteEvent( articulationExcursion(key, pitch, body[j]), ontime, millespernote));
        }
        // render the final note of the final repeat of body
-       qDebug("   (3) pitch=%d ontime=%d millespernote=%d", pitch, ontime, millespernote);
+       //qDebug("   (3) pitch=%d ontime=%d millespernote=%d", pitch, ontime, millespernote);
 
        events->append( NoteEvent( articulationExcursion(key, pitch, body[B-1]), ontime, millespernote+sustain));
        ontime += (millespernote+sustain);
     }
     // render the suffix
-    qDebug("suffix");
+    //qDebug("suffix");
     for (int j=0; j<S; j++, ontime += millespernote) {
-        qDebug("   pitch=%d ontime=%d millespernote=%d", pitch, ontime, millespernote);
+        //qDebug("   pitch=%d ontime=%d millespernote=%d", pitch, ontime, millespernote);
         events->append( NoteEvent( articulationExcursion(key, pitch, suffix[j]), ontime, millespernote));
     }
 }
