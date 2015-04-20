@@ -287,7 +287,7 @@ QVariant getProperty(P_ID id, XmlReader& e)
             case P_TYPE::ORNAMENT_STYLE:
                   {
                       QString value(e.readElementText());
-                      if ( value == "baroque")
+                      if ( value == "Baroque")
                           return QVariant(int(MScore::OrnamentStyle::BAROQUE));
                       if ( value == "no ornamentation")
                           return QVariant(int(MScore::OrnamentStyle::NO_ORNAMENTATION));
