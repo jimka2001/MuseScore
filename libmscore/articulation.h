@@ -57,6 +57,7 @@ struct ArticulationInfo {
       QString description;    // user-visible, translatable, name
       qreal timeStretch;      // for fermata
       MScore::OrnamentStyle ornamentStyle; // or ornaments such as trill
+      bool playArticulation;
       ArticulationShowIn flags;
       };
 
