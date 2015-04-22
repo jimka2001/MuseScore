@@ -246,7 +246,10 @@ void Articulation::setArticulationType(ArticulationType idx)
       _anchor           = score()->style()->articulationAnchor(int(_articulationType));
       anchorStyle       = PropertyStyle::STYLED;
       _timeStretch      = articulationList[int(articulationType())].timeStretch;
-      _ornamentStyle = MScore::OrnamentStyle::DEFAULT;
+      _ornamentStyle    = MScore::OrnamentStyle::DEFAULT;
+      setPlayArticulation(true);
+      //_playArticulation = true;
+          qDebug("(1) playArticulation = %d", _playArticulation);
       }
 
 //---------------------------------------------------------
@@ -256,6 +259,7 @@ void Articulation::setArticulationType(ArticulationType idx)
 void Articulation::read(XmlReader& e)
       {
       setArticulationType(ArticulationType::Fermata);    // default // backward compatibility (no type = ufermata in 1.2)
+          qDebug("(2) after setArticulationType _playArticulation = %d", _playArticulation);
       while (e.readNextStartElement()) {
             const QStringRef& tag(e.name());
             if (tag == "subtype")
@@ -273,6 +277,9 @@ void Articulation::read(XmlReader& e)
                   }
             else if ( tag == "ornamentStyle")
                 _ornamentStyle = MScore::OrnamentStyle(e.readInt());
+            else if ( tag == "playArticulation")
+                //_playArticulation = e.readBool();
+                setPlayArticulation(e.readBool());
             else if (tag == "timeStretch")
                   _timeStretch = e.readDouble();
             else if (tag == "offset") {
@@ -303,6 +310,8 @@ void Articulation::write(Xml& xml) const
             xml.tag("timeStretch", _timeStretch);
       if (_ornamentStyle != MScore::OrnamentStyle::DEFAULT)
             xml.tag("ornamentStyle", int(_ornamentStyle));
+      if ( playArticulation() == false) // if it is true, then write nothing as true is the default
+            xml.tag("playArticulation", false);
       Element::writeProperties(xml);
       if (anchorStyle == PropertyStyle::UNSTYLED)
             xml.tag("anchor", int(_anchor));
@@ -557,6 +566,7 @@ QVariant Articulation::getProperty(P_ID propertyId) const
             case P_ID::ARTICULATION_ANCHOR: return int(anchor());
             case P_ID::TIME_STRETCH:        return timeStretch();
             case P_ID::ORNAMENT_STYLE:      return int(ornamentStyle());
+            case P_ID::PLAY_ARTICULATION:   return int(playArticulation());
             default:
                   return Element::getProperty(propertyId);
             }
@@ -577,9 +587,13 @@ bool Articulation::setProperty(P_ID propertyId, const QVariant& v)
                   anchorStyle = PropertyStyle::UNSTYLED;
                   setAnchor(ArticulationAnchor(v.toInt()));
                   break;
+            case P_ID::PLAY_ARTICULATION:
+                  qDebug("setProperty setting playArticulation to %d", v.toBool());
+                  setPlayArticulation(v.toBool());
+                  break;
             case P_ID::ORNAMENT_STYLE:
-                 setOrnamentStyle(MScore::OrnamentStyle(v.toInt()));
-                 break;
+                  setOrnamentStyle(MScore::OrnamentStyle(v.toInt()));
+                  break;
             case P_ID::TIME_STRETCH:
                   setTimeStretch(v.toDouble());
                   score()->fixTicks();
@@ -626,7 +640,8 @@ QVariant Articulation::propertyDefault(P_ID propertyId) const
             case P_ID::ORNAMENT_STYLE:
                   //return int(score()->style()->ornamentStyle(_ornamentStyle));
                   return int(MScore::OrnamentStyle::DEFAULT);
-
+            case P_ID::PLAY_ARTICULATION:
+                  return true;
             default:
                   break;
             }

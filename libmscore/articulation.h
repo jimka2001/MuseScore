@@ -79,7 +79,7 @@ class Articulation : public Element {
       bool _up;
       qreal _timeStretch;      // for fermata
       MScore::OrnamentStyle _ornamentStyle; // for use in ornaments such as trill
-    
+      bool _playArticulation;
       virtual void draw(QPainter*) const;
 
    public:
@@ -141,6 +141,9 @@ class Articulation : public Element {
       MScore::OrnamentStyle ornamentStyle() const { return _ornamentStyle; }
       void setOrnamentStyle(MScore::OrnamentStyle val) { _ornamentStyle = val; }
 
+      bool playArticulation() const { qDebug("(4) getting _playArticulation = %d", _playArticulation); return _playArticulation;}
+      void setPlayArticulation(bool val) { _playArticulation = val; qDebug("(3) setting _playArticulation to %d", _playArticulation); }
+    
       QString channelName() const           { return _channelName; }
       void setChannelName(const QString& s) { _channelName = s;    }
 
