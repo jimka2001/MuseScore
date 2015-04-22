@@ -970,7 +970,7 @@ void renderChordArticulation(Chord *chord, QList<NoteEventList> & ell, int & gat
        };
     
     for (Articulation* a : chord->articulations()) {
-        if ( MScore::OrnamentStyle::NO_ORNAMENTATION == a->ornamentStyle())
+        if ( false == a->playArticulation())
             continue;
         for (int k = 0; k < chord->notes().size(); ++k) {
             NoteEventList* events = &ell[k];
